@@ -1,3 +1,4 @@
+import { Input } from "postcss";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
@@ -8,6 +9,10 @@ export const buildsRouter = router({
       z.object({
         matchUp: z.string(),
         build: z.string(),
+        style: z.string(),
+        author: z.string(),
+        title: z.string(),
+        description: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -15,13 +20,23 @@ export const buildsRouter = router({
         data: {
           matchUp: input.matchUp,
           build: input.build,
+          style: input.style,
+          author: input.author,
+          title: input.title,
+          description: input.description,
         },
       });
 
       return build;
     }),
-  getBuilds: publicProcedure.query(async ({ ctx }) => {
-    const builds = await ctx.prisma.buildOrder.findMany();
-    return builds;
-  }),
+  getBuildsByMatchUp: publicProcedure
+    .input(z.object({ matchUp: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const builds = await ctx.prisma.buildOrder.findMany({
+        where: {
+          matchUp: input.matchUp,
+        },
+      });
+      return builds;
+    }),
 });
